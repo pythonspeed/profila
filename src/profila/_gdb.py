@@ -87,7 +87,12 @@ async def _read_until_done(process: Process) -> dict[str, object]:
             raise ProcessExited()
 
 
-async def main(python_cli_args: list[bytes]) -> AsyncIterable[Optional[list[Frame]]]:
+async def run_subprocess(
+    python_cli_args: list[bytes],
+) -> AsyncIterable[Optional[list[Frame]]]:
+    """
+    Run Python in a subprocess.
+    """
     env = os.environ.copy()
     # Make sure we get useful info from Numba
     env["NUMBA_DEBUGINFO"] = "1"

@@ -6,13 +6,23 @@ import asyncio
 import os
 import sys
 
-from ._gdb import main
+from ._gdb import run_subprocess
+from ._stats import Stats
+
+
+def main():
+    stats = Stats()
+
+    async def iterate():
+        count = 0
+        async for sample in run_subprocess([os.fsencode(a) for a in sys.argv[1:]]):
+            count += 1
+            stats.add_sample(sample)
+        assert stats.total_samples() == count
+
+    asyncio.run(iterate())
+    print(stats)
 
 
 if __name__ == "__main__":
-
-    async def iterate():
-        async for f in main([os.fsencode(a) for a in sys.argv[1:]]):
-            print(f)
-
-    asyncio.run(iterate())
+    main()
