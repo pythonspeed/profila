@@ -18,9 +18,9 @@ from pygdbmi.gdbmiparser import parse_response
 
 
 @dataclass
-class PythonFile:
-    path: str
-    lines: dict[int, int]  # lines are 1-indexed!
+class Frame:
+    file: str
+    line: int
 
 
 async def _read(process):
@@ -38,18 +38,19 @@ async def _sample(process):
         start = time()
         process.stdin.write(b"-exec-interrupt\n")
         await _read_until_done(process)
-        # TODO switch to 10 frame backtrace, traverse upwards until we hit .py
-        # file... though maybe this should be in higher level API?
-        process.stdin.write(b"-stack-info-frame\n")
+
+        process.stdin.write(b"-stack-list-frames --no-frame-filters 0 10\n")
         message = await _read_until_done(process)
-        try:
-            print(
-                message["payload"]["frame"]["file"],
-                "line",
-                message["payload"]["frame"]["line"],
-            )
-        except KeyError:
-            pass
+        if "stack" not in message["payload"]:
+            # Bad read of some sort:
+            yield None
+        else:
+            yield [
+                Frame(file=f["file"], line=f["line"])
+                for f in message["payload"]["stack"]
+                if ("file" in f) and ("line" in f)
+            ]
+
         process.stdin.write(b"-exec-continue\n")
         await _read_until_done(process)
         elapsed = time() - start
@@ -84,7 +85,7 @@ async def read_forever(process):
                 return
 
 
-async def main(args: list[bytes]) -> list[PythonFile]:
+async def main(python_cli_args: list[bytes]) -> list[list[Frame]]:
     env = os.environ.copy()
     # Make sure we get useful info from Numba
     env["NUMBA_DEBUGINFO"] = "1"
@@ -104,9 +105,10 @@ async def main(args: list[bytes]) -> list[PythonFile]:
     process.stdin.write(b"-file-exec-file python\n")
     await _read_until_done(process)
     # TODO use shell quoting
-    process.stdin.write(b"-exec-arguments " + b" ".join(args) + b"\n")
+    process.stdin.write(b"-exec-arguments " + b" ".join(python_cli_args) + b"\n")
     await _read_until_done(process)
     process.stdin.write(b"-exec-run\n")
     await _read_until_done(process)
 
-    await _sample(process)
+    async for sample in _sample(process):
+        print(sample)
