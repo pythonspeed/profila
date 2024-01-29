@@ -17,6 +17,7 @@ import os
 from shlex import quote
 from time import time
 from typing import Optional
+from shutil import which
 import sys
 
 from pygdbmi.gdbmiparser import parse_response
@@ -94,6 +95,10 @@ async def run_subprocess(
     """
     Run Python in a subprocess.
     """
+    if not which("gdb"):
+        raise RuntimeError(
+            "Make sure gdb is installed, e.g. run 'apt install gdb' on Ubuntu."
+        )
     env = os.environ.copy()
     # Make sure we get useful info from Numba
     env["NUMBA_DEBUGINFO"] = "1"
