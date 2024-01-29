@@ -21,7 +21,10 @@ def main():
         assert stats.total_samples() == count
 
     asyncio.run(iterate())
-    print(stats)
+    final_stats = stats.finalize()
+    assert -1.0 < final_stats.total_percent() - 100 < 1.0
+
+    print(final_stats)
 
 
 if __name__ == "__main__":

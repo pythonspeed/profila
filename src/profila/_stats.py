@@ -8,6 +8,28 @@ from typing import Optional
 from ._gdb import Frame
 
 
+@dataclass(frozen=True)
+class FinalStats:
+    """
+    Final result when all stats are gathered.
+    """
+
+    total_samples: int
+    percent_bad_samples: float
+    percent_other_samples: float
+    # Map path to mapping of line number to percentage.
+    numba_samples: dict[str, dict[int, float]]
+
+    def total_percent(self) -> float:
+        """
+        Add up all percentages, should always be approximately 100%.
+        """
+        result = self.percent_bad_samples + self.percent_other_samples
+        for line_counts in self.numba_samples.values():
+            result += sum(line_counts.values())
+        return result
+
+
 @dataclass
 class Stats:
     # Map Python filenames to per-line counts. Should be Numba samples only.
@@ -28,7 +50,7 @@ class Stats:
             result += sum(line_counts.values())
         return result
 
-    def add_sample(self, sample: Optional[list[Frame]]):
+    def add_sample(self, sample: Optional[list[Frame]]) -> None:
         """
         Add a sample.
         """
@@ -42,3 +64,28 @@ class Stats:
                 return
 
         self.other_samples += 1
+
+    def finalize(self) -> FinalStats:
+        """
+        Calculate final stats for human rendering.
+        """
+        total_samples = self.total_samples()
+
+        def to_percent(count):
+            return round((count / total_samples) * 100, 1)
+
+        percent_bad_samples = to_percent(self.bad_samples)
+        percent_other_samples = to_percent(self.other_samples)
+        numba_samples = {}
+        for filename, counts in self.path_to_line_counts.items():
+            filename_counts = {}
+            numba_samples[filename] = filename_counts
+            for line_number, count in counts.items():
+                filename_counts[line_number] = to_percent(count)
+
+        return FinalStats(
+            total_samples=total_samples,
+            percent_bad_samples=percent_bad_samples,
+            percent_other_samples=percent_other_samples,
+            numba_samples=numba_samples,
+        )
