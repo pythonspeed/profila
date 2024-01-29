@@ -3,7 +3,7 @@ name = "profila"
 version = "0.1"
 description = "A profiler for Numba"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 authors = [{name = "Itamar Turner-Trauring"}]
 license = {text = "Apache-2.0"}
 classifiers = [
@@ -23,7 +23,7 @@ Issues = "https://github.com/pythonspeed/profila/issues"
 CI = "https://github.com/pythonspeed/profila/actions"
 
 [project.optional-dependencies]
-test = ["pytest", "ruff", "numba"]
+test = ["pytest", "ruff", "numba", "mypy"]
 
 [tool.setuptools]
 package-dir = {"" = "src"}
