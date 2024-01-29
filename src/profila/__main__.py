@@ -11,17 +11,22 @@ from ._stats import Stats
 from ._render import render_text
 
 
-def main():
+def get_stats(python_args: list[bytes]) -> Stats:
     stats = Stats()
 
     async def iterate():
         count = 0
-        async for sample in run_subprocess([os.fsencode(a) for a in sys.argv[1:]]):
+        async for sample in run_subprocess(python_args):
             count += 1
             stats.add_sample(sample)
         assert stats.total_samples() == count
 
     asyncio.run(iterate())
+    return stats
+
+
+def main():
+    stats = get_stats([os.fsencode(a) for a in sys.argv[1:]])
     final_stats = stats.finalize()
     assert -1.0 < final_stats.total_percent() - 100 < 1.0
 
