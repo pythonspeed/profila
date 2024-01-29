@@ -10,7 +10,7 @@ classifiers = [
     "License :: OSI Approved :: Apache Software License"
 ]
 dependencies = [
-
+    "pygdbmi"
 ]
 
 [build-system]
@@ -23,7 +23,7 @@ Issues = "https://github.com/pythonspeed/profila/issues"
 CI = "https://github.com/pythonspeed/profila/actions"
 
 [project.optional-dependencies]
-test = ["pytest", "ruff"]
+test = ["pytest", "ruff", "numba"]
 
 [tool.setuptools]
 package-dir = {"" = "src"}
