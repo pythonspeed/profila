@@ -18,11 +18,11 @@ ANNOTATE_PARSER = SUBPARSERS.add_parser(
     formatter_class=RawDescriptionHelpFormatter,
     description="""To profile "python example.py":
 
-    python -m profila annotate example.py
+    python -m profila annotate -- example.py
 
 To profile "python -m yourpackage --arg=123":
 
-    python -m profila annotate -m yourpackage --arg=123
+    python -m profila annotate -m -- yourpackage --arg=123
 """,
 )
 ANNOTATE_PARSER.add_argument(
@@ -48,6 +48,8 @@ def get_stats(python_args: list[str]) -> Stats:
 
 def main() -> None:
     args = PARSER.parse_args()
+    if args.rest and args.rest[0] == "--":
+        del args.rest[0]
     stats = get_stats(args.rest)
     final_stats = stats.finalize()
     assert -1.0 < final_stats.total_percent() - 100 < 1.0

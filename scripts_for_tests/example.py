@@ -4,7 +4,7 @@ from numba import njit
 DATA = np.random.random((1_000_000,))
 
 
-@njit(cache=True)
+@njit
 def moving_average(timeseries):
     result = np.empty(timeseries.shape, dtype=np.float64)
     first_day = timeseries[0]
