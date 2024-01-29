@@ -10,4 +10,9 @@ from ._gdb import main
 
 
 if __name__ == "__main__":
-    asyncio.run(main([os.fsencode(a) for a in sys.argv[1:]]))
+
+    async def iterate():
+        async for f in main([os.fsencode(a) for a in sys.argv[1:]]):
+            print(f)
+
+    asyncio.run(iterate())

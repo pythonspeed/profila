@@ -10,9 +10,13 @@ TODO: Currently only profiles the main thread.
 """
 
 import asyncio
+from asyncio.subprocess import Process
+from collections.abc import AsyncIterable
 from dataclasses import dataclass
 import os
 from time import time
+from typing import Optional
+import sys
 
 from pygdbmi.gdbmiparser import parse_response
 
@@ -23,17 +27,19 @@ class Frame:
     line: int
 
 
-async def _read(process):
+async def _read(process: Process) -> object:
+    assert process.stdout is not None
     data_bytes = await process.stdout.readline()
     data = data_bytes.decode("utf-8").rstrip()
     try:
         return parse_response(data)
     except Exception as e:
-        print("ERR", e)
+        print("ERROR PARSING GDB MESSAGE:", e, file=sys.stderr)
         return None
 
 
-async def _sample(process):
+async def _sample(process: Process) -> AsyncIterable[Optional[list[Frame]]]:
+    assert process.stdin is not None
     while True:
         start = time()
         process.stdin.write(b"-exec-interrupt\n")
@@ -41,13 +47,13 @@ async def _sample(process):
 
         process.stdin.write(b"-stack-list-frames --no-frame-filters 0 10\n")
         message = await _read_until_done(process)
-        if "stack" not in message["payload"]:
+        if "stack" not in message["payload"]:  # type: ignore
             # Bad read of some sort:
             yield None
         else:
             yield [
                 Frame(file=f["file"], line=f["line"])
-                for f in message["payload"]["stack"]
+                for f in message["payload"]["stack"]  # type: ignore
                 if ("file" in f) and ("line" in f)
             ]
 
@@ -58,34 +64,30 @@ async def _sample(process):
         # print(time() - start)
 
 
-async def _read_until_done(process):
+class ProcessExited(Exception):
+    """The profiled process has exited."""
+
+
+async def _read_until_done(process: Process) -> dict[str, object]:
+    """
+    Read until a command is done, return its result dictionary.
+    """
+    assert process.stdin is not None
     while True:
         result = await _read(process)
         if result is None:
             continue
+        assert isinstance(result, dict)
         if result["type"] == "output":
             print(result["payload"])
         if result["type"] == "result":
             return result
         if result["type"] == "notify" and result["message"] == "thread-group-exited":
             process.stdin.write(b"-gdb-exit\n")
-            raise SystemExit()
+            raise ProcessExited()
 
 
-async def read_forever(process):
-    while True:
-        result = await _read(process)
-        if result is not None:
-            print(result)
-            if (
-                result["type"] == "notify"
-                and result["message"] == "thread-group-exited"
-            ):
-                process.stdin.write(b"-gdb-exit\n")
-                return
-
-
-async def main(python_cli_args: list[bytes]) -> list[list[Frame]]:
+async def main(python_cli_args: list[bytes]) -> AsyncIterable[Optional[list[Frame]]]:
     env = os.environ.copy()
     # Make sure we get useful info from Numba
     env["NUMBA_DEBUGINFO"] = "1"
@@ -99,6 +101,7 @@ async def main(python_cli_args: list[bytes]) -> list[list[Frame]]:
         stdin=asyncio.subprocess.PIPE,
         env=env,
     )
+    assert process.stdin is not None
 
     process.stdin.write(b"-gdb-set mi-async\n")
     await _read_until_done(process)
@@ -110,5 +113,8 @@ async def main(python_cli_args: list[bytes]) -> list[list[Frame]]:
     process.stdin.write(b"-exec-run\n")
     await _read_until_done(process)
 
-    async for sample in _sample(process):
-        print(sample)
+    try:
+        async for sample in _sample(process):
+            yield sample
+    except ProcessExited:
+        return
