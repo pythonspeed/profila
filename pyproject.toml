@@ -1,0 +1,32 @@
+[project]
+name = "profila"
+version = "0.1"
+description = "A profiler for Numba"
+readme = "README.md"
+requires-python = ">=3.8"
+authors = [{name = "Itamar Turner-Trauring"}]
+license = {text = "Apache-2.0"}
+classifiers = [
+    "License :: OSI Approved :: Apache Software License"
+]
+dependencies = [
+
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project.urls]
+Homepage = "https://github.com/pythonspeed/profila"
+Issues = "https://github.com/pythonspeed/profila/issues"
+CI = "https://github.com/pythonspeed/profila/actions"
+
+[project.optional-dependencies]
+test = ["pytest", "ruff"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
