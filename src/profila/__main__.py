@@ -8,6 +8,7 @@ import sys
 
 from ._gdb import run_subprocess
 from ._stats import Stats
+from ._render import render_text
 
 
 def main():
@@ -24,7 +25,7 @@ def main():
     final_stats = stats.finalize()
     assert -1.0 < final_stats.total_percent() - 100 < 1.0
 
-    print(final_stats)
+    print(render_text(final_stats))
 
 
 if __name__ == "__main__":

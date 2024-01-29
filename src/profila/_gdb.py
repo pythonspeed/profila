@@ -52,9 +52,9 @@ async def _sample(process: Process) -> AsyncIterable[Optional[list[Frame]]]:
             yield None
         else:
             yield [
-                Frame(file=f["file"], line=f["line"])
+                Frame(file=f["fullname"], line=int(f["line"]))
                 for f in message["payload"]["stack"]  # type: ignore
-                if ("file" in f) and ("line" in f)
+                if ("fullname" in f) and ("line" in f)
             ]
 
         process.stdin.write(b"-exec-continue\n")
