@@ -3,7 +3,6 @@ Run Profila as a command-line tool.
 """
 
 import asyncio
-import os
 import sys
 
 from ._gdb import run_subprocess
@@ -11,7 +10,7 @@ from ._stats import Stats
 from ._render import render_text
 
 
-def get_stats(python_args: list[bytes]) -> Stats:
+def get_stats(python_args: list[str]) -> Stats:
     stats = Stats()
 
     async def iterate():
@@ -25,8 +24,8 @@ def get_stats(python_args: list[bytes]) -> Stats:
     return stats
 
 
-def main():
-    stats = get_stats([os.fsencode(a) for a in sys.argv[1:]])
+def main() -> None:
+    stats = get_stats(sys.argv[1:])
     final_stats = stats.finalize()
     assert -1.0 < final_stats.total_percent() - 100 < 1.0
 

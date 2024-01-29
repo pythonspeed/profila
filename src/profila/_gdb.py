@@ -14,6 +14,7 @@ from asyncio.subprocess import Process
 from collections.abc import AsyncIterable
 from dataclasses import dataclass
 import os
+from shlex import quote
 from time import time
 from typing import Optional
 import sys
@@ -88,7 +89,7 @@ async def _read_until_done(process: Process) -> dict[str, object]:
 
 
 async def run_subprocess(
-    python_cli_args: list[bytes],
+    python_cli_args: list[str],
 ) -> AsyncIterable[Optional[list[Frame]]]:
     """
     Run Python in a subprocess.
@@ -112,8 +113,13 @@ async def run_subprocess(
     await _read_until_done(process)
     process.stdin.write(b"-file-exec-file python\n")
     await _read_until_done(process)
-    # TODO use shell quoting
-    process.stdin.write(b"-exec-arguments " + b" ".join(python_cli_args) + b"\n")
+    process.stdin.write(
+        b"-exec-arguments "
+        + b" ".join(
+            [os.fsencode(quote(s).replace("\n", "\\n")) for s in python_cli_args]
+        )
+        + b"\n"
+    )
     await _read_until_done(process)
     process.stdin.write(b"-exec-run\n")
     await _read_until_done(process)
