@@ -2,12 +2,34 @@
 Run Profila as a command-line tool.
 """
 
+from argparse import ArgumentParser, REMAINDER, RawDescriptionHelpFormatter
 import asyncio
 import sys
 
 from ._gdb import run_subprocess
 from ._stats import Stats
 from ._render import render_text
+
+PARSER = ArgumentParser(prog="profila", description="A profiler for Numba.")
+SUBPARSERS = PARSER.add_subparsers()
+ANNOTATE_PARSER = SUBPARSERS.add_parser(
+    "annotate",
+    help="Run a Python program and annotate the Numba source code.",
+    formatter_class=RawDescriptionHelpFormatter,
+    description="""To profile "python example.py":
+
+    python -m profila annotate example.py
+
+To profile "python -m yourpackage --arg=123":
+
+    python -m profila annotate -m yourpackage --arg=123
+""",
+)
+ANNOTATE_PARSER.add_argument(
+    "rest",
+    nargs=REMAINDER,
+    help="The arguments you'd usually pass to the Python command-line.",
+)
 
 
 def get_stats(python_args: list[str]) -> Stats:
@@ -25,7 +47,8 @@ def get_stats(python_args: list[str]) -> Stats:
 
 
 def main() -> None:
-    stats = get_stats(sys.argv[1:])
+    args = PARSER.parse_args()
+    stats = get_stats(args.rest)
     final_stats = stats.finalize()
     assert -1.0 < final_stats.total_percent() - 100 < 1.0
 

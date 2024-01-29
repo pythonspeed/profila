@@ -10,6 +10,7 @@ def test_stdout_and_stderr_passthrough():
             "python",
             "-m",
             "profila",
+            "annotate",
             "-c",
             "import sys; sys.stderr.write('err1@@\nXX\n'); sys.stdout.write('out2@@\nYY\n')",
         ],
