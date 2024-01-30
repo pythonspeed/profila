@@ -80,6 +80,11 @@ while (time() - start) < 3:
 
 ## The limitations of profiling output
 
+* Parallel Numba code will not be profiled correctly; at the moment only single-threaded profiling is supported.
+* GPU (CUDA) code is not profiled.
+
+Beyond that:
+
 ### 1. The compiled code isn't the same as the input code
 
 Compiled languages like Numba do optimization passes and transform the code to make it faster.
