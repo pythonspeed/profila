@@ -23,6 +23,7 @@ jobs:
         cache-dependency-path: pyproject.toml
     - name: Install dependencies
       run: |
+        sudo apt-get install -y gdb
         pip install '.[test]'
     - name: Run tests
       run: |
