@@ -1,6 +1,5 @@
 [project]
 name = "profila"
-version = "0.1"
 description = "A profiler for Numba"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -12,9 +11,10 @@ classifiers = [
 dependencies = [
     "pygdbmi"
 ]
+dynamic = ["version"]
 
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>60", "setuptools-scm>=8.0"]
 build-backend = "setuptools.build_meta"
 
 [project.urls]
@@ -30,3 +30,5 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools_scm]
