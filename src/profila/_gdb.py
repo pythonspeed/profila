@@ -133,4 +133,5 @@ async def run_subprocess(
         async for sample in _sample(process):
             yield sample
     except ProcessExited:
+        await process.wait()
         return
