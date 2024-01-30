@@ -16,7 +16,7 @@ from dataclasses import dataclass
 import os
 from shlex import quote
 from time import time
-from typing import Optional
+from typing import Optional, cast
 from shutil import which
 import sys
 
@@ -29,12 +29,12 @@ class Frame:
     line: int
 
 
-async def _read(process: Process) -> object:
+async def _read(process: Process) -> Optional[dict[str, object]]:
     assert process.stdout is not None
     data_bytes = await process.stdout.readline()
     data = data_bytes.decode("utf-8").rstrip()
     try:
-        return parse_response(data)
+        return cast(dict[str, object], parse_response(data))
     except Exception as e:
         print("ERROR PARSING GDB MESSAGE:", e, file=sys.stderr)
         return None

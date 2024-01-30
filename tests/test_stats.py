@@ -5,7 +5,7 @@ Tests for ``profila._stats``.
 from typing import Optional
 from hypothesis import given, strategies as st
 
-from profila._stats import Stats, FinalStats
+from profila._stats import Stats
 from profila._gdb import Frame
 
 import pytest
@@ -58,7 +58,7 @@ def test_create_stats(samples: list[Optional[list[Frame]]]) -> None:
             del frames[1:]
     samples2 = [s for s in samples2 if s]
 
-    expected = {}
+    expected: dict[str, dict[int, float]] = {}
     for s in samples2:
         expected.setdefault(s[0].file, {}).setdefault(s[0].line, 0)
         expected[s[0].file][s[0].line] += 1

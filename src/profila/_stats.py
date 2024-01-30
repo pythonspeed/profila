@@ -71,7 +71,7 @@ class Stats:
         """
         total_samples = self.total_samples()
 
-        def to_percent(count):
+        def to_percent(count: int) -> float:
             if total_samples == 0:
                 return 0.0
             return round((count / total_samples) * 100, 1)
@@ -80,7 +80,7 @@ class Stats:
         percent_other_samples = to_percent(self.other_samples)
         numba_samples = {}
         for filename, counts in self.path_to_line_counts.items():
-            filename_counts = {}
+            filename_counts: dict[int, float] = {}
             numba_samples[filename] = filename_counts
             for line_number, count in counts.items():
                 filename_counts[line_number] = to_percent(count)

@@ -2,11 +2,13 @@
 Tests for ``profila._render``.
 """
 
+from syrupy.assertion import SnapshotAssertion
+
 from profila._stats import FinalStats
 from profila._render import render_text
 
 
-def test_render_text(snapshot):
+def test_render_text(snapshot: SnapshotAssertion) -> None:
     """
     Minimal test for ``render_text()``.
     """

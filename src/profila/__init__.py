@@ -1,2 +1,3 @@
-def example_function():
-    return 1 + 1
+"""
+A profiler for Numba.
+"""

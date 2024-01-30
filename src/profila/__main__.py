@@ -4,7 +4,6 @@ Run Profila as a command-line tool.
 
 from argparse import ArgumentParser, REMAINDER, RawDescriptionHelpFormatter
 import asyncio
-import sys
 
 from ._gdb import run_subprocess
 from ._stats import Stats
@@ -35,7 +34,7 @@ ANNOTATE_PARSER.add_argument(
 def get_stats(python_args: list[str]) -> Stats:
     stats = Stats()
 
-    async def iterate():
+    async def iterate() -> None:
         count = 0
         async for sample in run_subprocess(python_args):
             count += 1

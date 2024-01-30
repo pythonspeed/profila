@@ -4,7 +4,7 @@ import os
 from profila.__main__ import get_stats
 
 
-def test_stdout_and_stderr_passthrough():
+def test_stdout_and_stderr_passthrough() -> None:
     """
     stdout and stderr are passed from the subprocess.
     """
@@ -21,11 +21,13 @@ def test_stdout_and_stderr_passthrough():
         stdout=PIPE,
         stderr=PIPE,
     )
+    assert p.stdout is not None
+    assert p.stderr is not None
     assert b"err1@@\nXX" in p.stderr.read()
     assert b"out2@@\nYY" in p.stdout.read()
 
 
-def test_profiling():
+def test_profiling() -> None:
     """
     Plausible costs are assigned to relevant lines of code.
     """
