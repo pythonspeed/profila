@@ -25,4 +25,21 @@ jobs:
     - name: Run tests
       run: |
         pytest
-        ruff check src/
+        ruff check src/ tests/
+
+  mypy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: MyPy
+      uses: actions/setup-python@v5
+      with:
+        python-version: 3.12
+        cache: pip
+        cache-dependency-path: pyproject.toml
+    - name: Install dependencies
+      run: |
+        pip install '.[test]'
+    - name: Run mypy
+      run: |
+        mypy --strict --install-types --non-interactive tests/ src/
