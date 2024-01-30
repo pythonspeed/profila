@@ -7,7 +7,7 @@
 
 **This profiler is sponsored by my book on [writing fast low-level code in Python](https://pythonspeed.com/products/lowlevelcode/), which uses Numba for most of its examples.**
 
-An example:
+Here's what Profila output looks like:
 
 ```bash
 $ python -m profila annotate -- scripts_for_tests/simple.py
