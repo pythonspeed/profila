@@ -8,6 +8,8 @@ from hypothesis import given, strategies as st
 from profila._stats import Stats, FinalStats
 from profila._gdb import Frame
 
+import pytest
+
 
 @given(
     samples=st.lists(
@@ -65,3 +67,21 @@ def test_create_stats(samples: list[Optional[list[Frame]]]) -> None:
         stats2.add_sample(sample)
     assert stats.path_to_line_counts == stats2.path_to_line_counts
     assert stats.path_to_line_counts == expected
+
+    # Check FinalStats conversion.
+    final_stats = stats.finalize()
+    total = final_stats.total_samples
+    assert total == stats.total_samples()
+    assert (final_stats.percent_bad_samples / 100) * total == pytest.approx(
+        stats.bad_samples, 0.01
+    )
+    assert (final_stats.percent_other_samples / 100) * total == pytest.approx(
+        stats.other_samples, 0.01
+    )
+    assert final_stats.numba_samples.keys() == stats.path_to_line_counts.keys()
+    for path, line_to_pct in final_stats.numba_samples.items():
+        assert line_to_pct.keys() == stats.path_to_line_counts[path].keys()
+        for line, pct in line_to_pct.items():
+            assert (pct / 100) * total == pytest.approx(
+                stats.path_to_line_counts[path][line], 0.01
+            )

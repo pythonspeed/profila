@@ -72,6 +72,8 @@ class Stats:
         total_samples = self.total_samples()
 
         def to_percent(count):
+            if total_samples == 0:
+                return 0.0
             return round((count / total_samples) * 100, 1)
 
         percent_bad_samples = to_percent(self.bad_samples)
