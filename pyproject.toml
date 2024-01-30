@@ -23,7 +23,7 @@ Issues = "https://github.com/pythonspeed/profila/issues"
 CI = "https://github.com/pythonspeed/profila/actions"
 
 [project.optional-dependencies]
-test = ["pytest", "ruff", "numba", "mypy", "hypothesis"]
+test = ["pytest", "ruff", "numba", "mypy", "hypothesis", "syrupy"]
 
 [tool.setuptools]
 package-dir = {"" = "src"}

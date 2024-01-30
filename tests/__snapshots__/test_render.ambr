@@ -1,0 +1,15 @@
+# serializer version: 1
+# name: test_render_text
+  '''
+  # Total samples: 1000 (15.1% non-Numba samples, 9.9% bad samples)
+  
+  ## File `scripts_for_tests/simple.py`
+  Lines 12 to 15:
+  
+   35.0% |         result[i] = (7 + timeseries[i] / 9 + (timeseries[i] ** 2) / 7) / 5
+         |     for i in range(len(result)):
+         |         # This should be cheaper:
+   40.0% |         result[i] -= 1
+  
+  '''
+# ---
