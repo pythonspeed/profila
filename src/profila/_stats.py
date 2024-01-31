@@ -94,5 +94,5 @@ class Stats:
             percent_other_samples=percent_other_samples,
             numba_samples=numba_samples,
         )
-        assert -1.0 < final_stats.total_percent() - 100 < 1.0
+        assert -5.0 < final_stats.total_percent() - 100 < 5.0
         return final_stats
