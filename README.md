@@ -53,7 +53,7 @@ pip install profila
 
 ## Usage
 
-### Jupyter
+### Jupyter profiling
 
 First, before you `import numba` you should:
 
@@ -86,7 +86,7 @@ for i in range(100):
     myfunc(DATA)
 ```
 
-### Command-line
+### Command-line profiling
 If you usually run your script like this:
 
 ```bash
