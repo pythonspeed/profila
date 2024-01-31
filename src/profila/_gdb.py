@@ -31,6 +31,8 @@ class Frame:
 async def _read(process: Process) -> Optional[dict[str, object]]:
     assert process.stdout is not None
     data_bytes = await process.stdout.readline()
+    if process.returncode is not None:
+        raise ProcessExited()
     data = data_bytes.decode("utf-8").rstrip()
     try:
         return cast(dict[str, object], parse_response(data))
@@ -148,13 +150,14 @@ async def attach_subprocess(pid: str) -> Process:
     process = await asyncio.create_subprocess_exec(
         "gdb",
         "--interpreter=mi3",
-        "--pid=" + pid,
         stdout=asyncio.subprocess.PIPE,
         stdin=asyncio.subprocess.PIPE,
     )
     assert process.stdin is not None
 
     process.stdin.write(b"-gdb-set mi-async\n")
+    await _read_until_done(process)
+    process.stdin.write(b"-target-attach %s\n" % pid.encode("ascii"))
     await _read_until_done(process)
     process.stdin.write(b"-exec-continue\n")
     await _read_until_done(process)

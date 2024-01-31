@@ -85,8 +85,15 @@ def attach_automated_command(args: Namespace) -> None:
     Run the ``attach_automated`` command.
     """
 
+    async def stop_on_stdin_close(process: Process) -> None:
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(None, sys.stdin.read)
+        assert process.stdin is not None
+        process.stdin.write(b"-gdb-exit\n")
+
     async def main() -> Stats:
         process = await attach_subprocess(args.pid)
+        asyncio.create_task(stop_on_stdin_close(process))
         sys.stdout.write(json.dumps({"message": "attached"}) + "\n")
         sys.stdout.flush()
         return await get_stats(process)
