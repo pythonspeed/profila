@@ -1,10 +1,5 @@
 # Profila: a profiler for Numba
 
-[![PyPI](https://img.shields.io/pypi/v/profila.svg)](https://pypi.org/project/profila/)
-[![Tests](https://github.com/pythonspeed/profila/actions/workflows/test.yml/badge.svg)](https://github.com/pythonspeed/profila/actions/workflows/test.yml)
-[![Changelog](https://img.shields.io/github/v/release/pythonspeed/profila?include_prereleases&label=changelog)](https://github.com/pythonspeed/profila/releases)
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/pythonspeed/profila/blob/main/LICENSE)
-
 **This profiler is sponsored by my book on [writing fast low-level code in Python](https://pythonspeed.com/products/lowlevelcode/), which uses Numba for most of its examples.**
 
 Here's what Profila output looks like:
@@ -24,7 +19,9 @@ Lines 10 to 15:
   4.3% |         result[i] -= 1
 ```
 
-To learn more [read this introductory article with a more detailed example and explanations](https://pythonspeed.com/articles/numba-profiling/).
+You can also use it with Jupyter!
+
+Beyond this README, you can also [read this introductory article with a more detailed example and explanations](https://pythonspeed.com/articles/numba-profiling/).
 
 **TL;DR limitations:** Linux only, and only single-threaded Numba can be profiled currently, parallel functions are not yet supported.
 
@@ -56,6 +53,40 @@ pip install profila
 
 ## Usage
 
+### Jupyter
+
+First, before you `import numba` you should:
+
+```python
+%load_ext profila
+```
+
+Then define your functions as usual:
+
+```python
+from numba import njit
+
+@njit
+def myfunc(arr):
+    # ... your code here ...
+```
+
+You probably want to call your Numba function at least once, so profiling doesn't measure compilation time:
+
+```python
+myfunc(DATA)
+```
+
+Then, you can profile a specific cell using the `%%profila` magic, e.g.
+
+```python
+%%profila
+# Make sure we run this enough to get good measurements:
+for i in range(100):
+    myfunc(DATA)
+```
+
+### Command-line
 If you usually run your script like this:
 
 ```bash
@@ -72,7 +103,7 @@ $ python -m profila annotate -- yourscript.py --arg1=200
 For example, you can run your function in a loop until a number of seconds has passed:
 
 ```python
-from time import time
+nfrom time import time
 
 @njit
 def myfunc():
@@ -80,9 +111,9 @@ def myfunc():
 
 start = time()
 # Run for 3 seconds:
-while (time() - start) < 3:
+nwhile (time() - start) < 3:
     myfunc()
-```
+n```
 
 ## The limitations of profiling output
 
@@ -109,6 +140,10 @@ Instruction-level parallelism, branch mispredictions, SIMD, and the CPU memory c
 [I'm writing a book about this if you want to learn more](https://pythonspeed.com/products/lowlevelcode/).
 
 ## Changelog
+
+### v0.2.0
+
+Added support for Jupyter profiling.
 
 ### v0.1.0
 
