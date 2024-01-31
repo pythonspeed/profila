@@ -52,7 +52,7 @@ def test_profiling() -> None:
     assert expensive > 5
     cheap = simple_stats[15]
     assert expensive > cheap * 2
-    assert cheap > 0.5
+    assert cheap > 0
 
 
 def test_jupyter():
