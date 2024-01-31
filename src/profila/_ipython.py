@@ -24,6 +24,10 @@ PR_SET_PTRACER = ctypes.c_int(0x59616D61)
 
 @magics_class
 class ProfilaMagics(Magics):
+    """
+    IPython/Jupyter magics.
+    """
+
     @cell_magic  # type: ignore[misc]
     def profila(self, line: str, cell: str) -> None:
         """Run the cell under a profiler."""
@@ -62,6 +66,8 @@ class ProfilaMagics(Magics):
         # Tell the subprocess it can exit:
         profiler.stdin.close()
 
+        # JSON can't have integer keys, so we need to convert strings (line
+        # numbers) back to integers.
         message = json.loads(profiler.stdout.readline().rstrip())
         for line_mappings in message["stats"]["numba_samples"].values():
             for line, pct in list(line_mappings.items()):
