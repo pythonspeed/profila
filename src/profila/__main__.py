@@ -90,17 +90,22 @@ def attach_automated_command(args: Namespace) -> None:
 
     async def stop_on_stdin_close(process: Process) -> None:
         loop = asyncio.get_event_loop()
+        # The Jupyter side will signal it's finished running code by closing
+        # stdin.
         await loop.run_in_executor(None, sys.stdin.read)
         await exit_subprocess(process)
 
     async def main() -> Stats:
         process = await attach_subprocess(args.pid)
         asyncio.create_task(stop_on_stdin_close(process))
+        # Tell the Jupyter side it can start running code:
         sys.stdout.write(json.dumps({"message": "attached"}) + "\n")
         sys.stdout.flush()
         return await get_stats(process)
 
     final_stats = asyncio.run(main()).finalize()
+    # The source code is only available inside the Jupyter process (it's cells,
+    # not files on the filesystem), so do the source code loading over there.
     sys.stdout.write(
         json.dumps({"message": "stats", "stats": asdict(final_stats)}) + "\n"
     )
