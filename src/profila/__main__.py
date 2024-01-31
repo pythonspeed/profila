@@ -29,6 +29,18 @@ ANNOTATE_PARSER.add_argument(
     nargs=REMAINDER,
     help="The arguments you'd usually pass to the Python command-line.",
 )
+ANNOTATE_PARSER.set_defaults(command="annotate")
+ATTACH_AUTOMATED_PARSER = SUBPARSERS.add_parser(
+    "attach_automated",
+    help="Attach to an existing process, for use by the Jupyter extension.",
+)
+ATTACH_AUTOMATED_PARSER.add_argument(
+    "PID",
+    dest="pid",
+    action="store",
+    help="The process PID.",
+)
+ATTACH_AUTOMATED_PARSER.set_defaults(command="attach_automated")
 
 
 def get_stats(python_args: list[str]) -> Stats:
@@ -47,6 +59,7 @@ def get_stats(python_args: list[str]) -> Stats:
 
 def main() -> None:
     args = PARSER.parse_args()
+    assert args.command == "annotate"  # TODO temporary
     if args.rest and args.rest[0] == "--":
         del args.rest[0]
     stats = get_stats(args.rest)
