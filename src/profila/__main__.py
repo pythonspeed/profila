@@ -2,14 +2,14 @@
 Run Profila as a command-line tool.
 """
 
-from argparse import ArgumentParser, REMAINDER, RawDescriptionHelpFormatter
+from argparse import ArgumentParser, REMAINDER, RawDescriptionHelpFormatter, Namespace
 import asyncio
 from asyncio.subprocess import Process
+import json
 from shutil import which
-from typing import Any
-from collections.abc import Coroutine
+import sys
 
-from ._gdb import run_subprocess, read_samples
+from ._gdb import run_subprocess, read_samples, attach_subprocess
 from ._stats import Stats
 from ._render import render_text
 
@@ -46,44 +46,66 @@ ATTACH_AUTOMATED_PARSER.add_argument(
 ATTACH_AUTOMATED_PARSER.set_defaults(command="attach_automated")
 
 
-def get_stats(process: Coroutine[Any, Any, Process]) -> Stats:
+async def get_stats(process: Process) -> Stats:
     stats = Stats()
 
-    async def iterate(future_process: Coroutine[Any, Any, Process]) -> None:
-        process = await future_process
-        count = 0
-        async for sample in read_samples(process):
-            count += 1
-            stats.add_sample(sample)
-        assert stats.total_samples() == count
+    count = 0
+    async for sample in read_samples(process):
+        count += 1
+        stats.add_sample(sample)
+    assert stats.total_samples() == count
 
-    asyncio.run(iterate(process))
     return stats
+
+
+def annotate_command(args: Namespace) -> None:
+    """
+    Run the ``anotate`` command.
+    """
+    if args.rest and args.rest[0] == "--":
+        del args.rest[0]
+
+    if not which("gdb"):
+        raise SystemExit(
+            "gdb not found, make sure it is installed, e.g. "
+            "run 'apt install gdb' on Ubuntu."
+        )
+
+    async def main() -> Stats:
+        process = await run_subprocess(args.rest)
+        return await get_stats(process)
+
+    stats = asyncio.run(main())
+    final_stats = stats.finalize()
+    print(render_text(final_stats))
+
+
+def attach_automated_command(args: Namespace) -> None:
+    """
+    Run the ``attach_automated`` command.
+    """
+
+    async def main() -> Stats:
+        process = await attach_subprocess(args.pid)
+        sys.stdout.write(json.dumps({"message": "attached"}) + "\n")
+        sys.stdout.flush()
+        return await get_stats(process)
+
+    final_stats = asyncio.run(main()).finalize()
+    sys.stdout.write(
+        json.dumps({"message": "stats", "stats": render_text(final_stats)}) + "\n"
+    )
+    sys.stdout.flush()
 
 
 def main() -> None:
     args = PARSER.parse_args()
-    process = None
     if args.command == "annotate":
-        if args.rest and args.rest[0] == "--":
-            del args.rest[0]
-
-        if not which("gdb"):
-            raise SystemExit(
-                "gdb not found, make sure it is installed, e.g. "
-                "run 'apt install gdb' on Ubuntu."
-            )
-
-        process = run_subprocess(args.rest)
+        annotate_command(args)
+    elif args.command == "attach_automated":
+        attach_automated_command(args)
     else:
-        raise NotImplementedError("TODO")
-
-    assert process is not None
-    stats = get_stats(process)
-    final_stats = stats.finalize()
-    assert -1.0 < final_stats.total_percent() - 100 < 1.0
-
-    print(render_text(final_stats))
+        raise NotImplementedError()
 
 
 if __name__ == "__main__":

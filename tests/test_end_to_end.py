@@ -1,6 +1,8 @@
+import asyncio
 from subprocess import Popen, PIPE
 import os
 
+from profila._stats import FinalStats
 from profila._gdb import run_subprocess
 from profila.__main__ import get_stats
 
@@ -34,7 +36,12 @@ def test_profiling() -> None:
     """
     simple_py = "scripts_for_tests/simple.py"
     process = run_subprocess([simple_py])
-    final_stats = get_stats(process).finalize()
+
+    async def main() -> FinalStats:
+        process = await run_subprocess([simple_py])
+        return (await get_stats(process)).finalize()
+
+    final_stats = asyncio.run(main())
     simple_py = os.path.abspath(simple_py)
 
     simple_stats = final_stats.numba_samples[simple_py]

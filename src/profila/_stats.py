@@ -27,6 +27,9 @@ class FinalStats:
         result = self.percent_bad_samples + self.percent_other_samples
         for line_counts in self.numba_samples.values():
             result += sum(line_counts.values())
+        if result == 0.0:
+            # Got absolutely nothing, which is also valid!
+            result = 100.0
         return result
 
 
@@ -85,9 +88,11 @@ class Stats:
             for line_number, count in counts.items():
                 filename_counts[line_number] = to_percent(count)
 
-        return FinalStats(
+        final_stats = FinalStats(
             total_samples=total_samples,
             percent_bad_samples=percent_bad_samples,
             percent_other_samples=percent_other_samples,
             numba_samples=numba_samples,
         )
+        assert -1.0 < final_stats.total_percent() - 100 < 1.0
+        return final_stats
