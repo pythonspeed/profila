@@ -46,18 +46,30 @@ async def _sample(process: Process) -> AsyncIterable[Optional[list[Frame]]]:
         start = time()
         process.stdin.write(b"-exec-interrupt\n")
         await _read_until_done(process)
-
-        process.stdin.write(b"-stack-list-frames --no-frame-filters 0 10\n")
+        process.stdin.write(b"-thread-list-ids\n")
         message = await _read_until_done(process)
-        if "stack" not in message["payload"]:  # type: ignore
-            # Bad read of some sort:
-            yield None
-        else:
-            yield [
-                Frame(file=f["fullname"], line=int(f["line"]))
-                for f in message["payload"]["stack"]  # type: ignore
-                if ("fullname" in f) and ("line" in f)
-            ]
+        threads = message["payload"]["thread-ids"]["thread-id"]
+        if isinstance(threads, str):
+            threads = [threads]
+        for tid in threads:
+            process.stdin.write(
+                b"-stack-list-frames --thread %s --no-frame-filters 0 3\n"
+                % tid.encode("utf-8")
+            )
+            message = await _read_until_done(process)
+            # print(message)
+            if "stack" not in message["payload"]:  # type: ignore
+                # Bad read of some sort:
+                yield None
+            else:
+                result = [
+                    Frame(file=f["fullname"], line=int(f["line"]))
+                    for f in message["payload"]["stack"]  # type: ignore
+                    if ("fullname" in f) and ("line" in f)
+                ]
+                if tid != "1" and result and result[0].file.endswith(".py"):
+                    print(result)
+                yield result
 
         process.stdin.write(b"-exec-continue\n")
         await _read_until_done(process)
