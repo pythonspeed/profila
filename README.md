@@ -26,6 +26,8 @@ Lines 10 to 15:
 
 To learn more [read this introductory article with a more detailed example and explanations](https://pythonspeed.com/articles/numba-profiling/).
 
+**TL;DR limitations:** Linux only, and only single-threaded Numba can be profiled currently, parallel functions are not yet supported.
+
 ## Installation
 
 Currently Profila works on Linux only.
