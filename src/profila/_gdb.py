@@ -17,7 +17,6 @@ import os
 from shlex import quote
 from time import time
 from typing import Optional, cast
-from shutil import which
 import sys
 
 from pygdbmi.gdbmiparser import parse_response
@@ -89,16 +88,26 @@ async def _read_until_done(process: Process) -> dict[str, object]:
             raise ProcessExited()
 
 
+async def read_samples(process: Process) -> AsyncIterable[Optional[list[Frame]]]:
+    """
+    Return async iterable of samples read from the process.
+
+    Call on result of ``run_subprocess()`` or ``attach_subprocess()``.
+    """
+    try:
+        async for sample in _sample(process):
+            yield sample
+    except ProcessExited:
+        await process.wait()
+        return
+
+
 async def run_subprocess(
     python_cli_args: list[str],
-) -> AsyncIterable[Optional[list[Frame]]]:
+) -> Process:
     """
     Run Python in a subprocess.
     """
-    if not which("gdb"):
-        raise RuntimeError(
-            "Make sure gdb is installed, e.g. run 'apt install gdb' on Ubuntu."
-        )
     env = os.environ.copy()
     # Make sure we get useful info from Numba
     env["NUMBA_DEBUGINFO"] = "1"
@@ -129,9 +138,25 @@ async def run_subprocess(
     process.stdin.write(b"-exec-run\n")
     await _read_until_done(process)
 
-    try:
-        async for sample in _sample(process):
-            yield sample
-    except ProcessExited:
-        await process.wait()
-        return
+    return process
+
+
+async def attach_subprocess(pid: str) -> Process:
+    """
+    Attach to an existing Python subprocess.
+    """
+    process = await asyncio.create_subprocess_exec(
+        "gdb",
+        "--interpreter=mi3",
+        "--pid=" + pid,
+        stdout=asyncio.subprocess.PIPE,
+        stdin=asyncio.subprocess.PIPE,
+    )
+    assert process.stdin is not None
+
+    process.stdin.write(b"-gdb-set mi-async\n")
+    await _read_until_done(process)
+    process.stdin.write(b"-exec-continue\n")
+    await _read_until_done(process)
+
+    return process

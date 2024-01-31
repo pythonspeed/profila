@@ -1,6 +1,7 @@
 from subprocess import Popen, PIPE
 import os
 
+from profila._gdb import run_subprocess
 from profila.__main__ import get_stats
 
 
@@ -32,7 +33,8 @@ def test_profiling() -> None:
     Plausible costs are assigned to relevant lines of code.
     """
     simple_py = "scripts_for_tests/simple.py"
-    final_stats = get_stats([simple_py]).finalize()
+    process = run_subprocess([simple_py])
+    final_stats = get_stats(process).finalize()
     simple_py = os.path.abspath(simple_py)
 
     simple_stats = final_stats.numba_samples[simple_py]
