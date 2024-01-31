@@ -20,7 +20,6 @@ prctl.argtypes = [ctypes.c_int]
 prctl.restype = ctypes.c_int
 # From linux/prctl.h:
 PR_SET_PTRACER = ctypes.c_int(0x59616D61)
-PR_SET_PTRACER_ANY = ctypes.c_long(-1)
 
 
 @magics_class
