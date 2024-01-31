@@ -29,9 +29,17 @@ class ProfilaMagics(Magics):
     def profila(self, line, cell):
         """Run the cell under a profiler."""
         del line
-        start = time()
 
-        prctl(PR_SET_PTRACER, PR_SET_PTRACER_ANY)
+        # Allow this process' children to attach via ptrace(), so that gdb works:
+        prctl(PR_SET_PTRACER, ctypes.c_long(os.getpid()))
+        try:
+            self._run_profila(cell)
+        finally:
+            # Switch back to normal ptrace() policy:
+            prctl(PR_SET_PTRACER, ctypes.c_long(0))
+
+    def _run_profila(self, cell):
+        start = time()
         profiler = Popen(
             [
                 sys.executable,
@@ -47,9 +55,13 @@ class ProfilaMagics(Magics):
         assert profiler.stdin is not None
         assert profiler.stdout is not None
         assert json.loads(profiler.stdout.readline().rstrip())["message"] == "attached"
+
+        # Run the code:
         self.shell.run_cell(cell)
+
+        # Tell the subprocess it can exit:
         profiler.stdin.close()
-        prctl(PR_SET_PTRACER, ctypes.c_long(0))
+
         message = json.loads(profiler.stdout.readline().rstrip())
         for line_mappings in message["stats"]["numba_samples"].values():
             for line, pct in list(line_mappings.items()):
