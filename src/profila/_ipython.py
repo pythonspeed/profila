@@ -6,6 +6,7 @@ import json
 import sys
 import os
 from subprocess import Popen, PIPE
+from time import time
 
 from ._stats import FinalStats
 from ._render import render_text
@@ -28,6 +29,8 @@ class ProfilaMagics(Magics):
     def profila(self, line, cell):
         """Run the cell under a profiler."""
         del line
+        start = time()
+
         prctl(PR_SET_PTRACER, PR_SET_PTRACER_ANY)
         profiler = Popen(
             [
@@ -55,4 +58,7 @@ class ProfilaMagics(Magics):
 
         assert message["message"] == "stats"
         final_stats = FinalStats(**message["stats"])
-        display(Markdown(render_text(final_stats)))
+
+        elapsed = time() - start
+        text = f"**Elapsed:** {elapsed:.3f} seconds\n\n" + render_text(final_stats)
+        display(Markdown(text))
