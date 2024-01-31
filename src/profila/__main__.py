@@ -5,6 +5,7 @@ Run Profila as a command-line tool.
 from argparse import ArgumentParser, REMAINDER, RawDescriptionHelpFormatter, Namespace
 import asyncio
 from asyncio.subprocess import Process
+from dataclasses import asdict
 import json
 from shutil import which
 import sys
@@ -83,6 +84,8 @@ def annotate_command(args: Namespace) -> None:
 def attach_automated_command(args: Namespace) -> None:
     """
     Run the ``attach_automated`` command.
+
+    The other side of this logic is in the ``_python.py`` module.
     """
 
     async def stop_on_stdin_close(process: Process) -> None:
@@ -100,7 +103,7 @@ def attach_automated_command(args: Namespace) -> None:
 
     final_stats = asyncio.run(main()).finalize()
     sys.stdout.write(
-        json.dumps({"message": "stats", "stats": render_text(final_stats)}) + "\n"
+        json.dumps({"message": "stats", "stats": asdict(final_stats)}) + "\n"
     )
     sys.stdout.flush()
 

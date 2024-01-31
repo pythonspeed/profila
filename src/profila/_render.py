@@ -25,7 +25,7 @@ def render_text(stats: FinalStats) -> str:
         min_line = min(line_percents)
         max_line = max(line_percents)
 
-        result.write(f"Lines {min_line} to {max_line}:\n\n")
+        result.write(f"Lines {min_line} to {max_line}:\n\n```\n")
         for line_number in range(min_line, max_line + 1):
             code = getline(filename, line_number).rstrip()
             percent = line_percents.get(line_number, 0)
@@ -34,5 +34,6 @@ def render_text(stats: FinalStats) -> str:
             else:
                 usage = f"{percent:>5}%"
             result.write(f"{usage} | {code}\n")
+        result.write("```\n")
 
     return result.getvalue()
