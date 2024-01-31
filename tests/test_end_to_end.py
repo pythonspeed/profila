@@ -1,5 +1,5 @@
 import asyncio
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, check_output
 import os
 
 from profila._stats import FinalStats
@@ -35,7 +35,6 @@ def test_profiling() -> None:
     Plausible costs are assigned to relevant lines of code.
     """
     simple_py = "scripts_for_tests/simple.py"
-    process = run_subprocess([simple_py])
 
     async def main() -> FinalStats:
         process = await run_subprocess([simple_py])
@@ -53,3 +52,16 @@ def test_profiling() -> None:
     assert expensive > 5
     cheap = simple_stats[15]
     assert expensive * 2 > cheap > 1
+
+
+def test_jupyter():
+    """
+    Test rendering a Jupyter notebook that profiles with profila.
+    """
+    output = check_output(
+        "jupyter-nbconvert scripts_for_tests/test.ipynb --execute --to markdown --stdout".split(),
+        encoding="utf-8",
+    )
+    assert "% non-Numba samples" in output
+    assert "% |         for j in range(max(i - 6, 0), i + 1):" in output
+    assert "% |             total += timeseries[j]" in output
