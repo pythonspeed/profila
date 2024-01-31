@@ -103,7 +103,7 @@ $ python -m profila annotate -- yourscript.py --arg1=200
 For example, you can run your function in a loop until a number of seconds has passed:
 
 ```python
-nfrom time import time
+from time import time
 
 @njit
 def myfunc():
@@ -111,9 +111,9 @@ def myfunc():
 
 start = time()
 # Run for 3 seconds:
-nwhile (time() - start) < 3:
+while (time() - start) < 3:
     myfunc()
-n```
+```
 
 ## The limitations of profiling output
 
