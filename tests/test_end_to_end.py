@@ -55,7 +55,7 @@ def test_profiling() -> None:
     assert cheap > 0
 
 
-def test_jupyter():
+def test_jupyter() -> None:
     """
     Test rendering a Jupyter notebook that profiles with profila.
     """

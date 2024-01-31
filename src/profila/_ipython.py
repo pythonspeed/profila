@@ -25,8 +25,8 @@ PR_SET_PTRACER_ANY = ctypes.c_long(-1)
 
 @magics_class
 class ProfilaMagics(Magics):
-    @cell_magic
-    def profila(self, line, cell):
+    @cell_magic  # type: ignore[misc]
+    def profila(self, line: str, cell: str) -> None:
         """Run the cell under a profiler."""
         del line
 
@@ -38,7 +38,7 @@ class ProfilaMagics(Magics):
             # Switch back to normal ptrace() policy:
             prctl(PR_SET_PTRACER, ctypes.c_long(0))
 
-    def _run_profila(self, cell):
+    def _run_profila(self, cell: str) -> None:
         start = time()
         profiler = Popen(
             [
@@ -57,6 +57,7 @@ class ProfilaMagics(Magics):
         assert json.loads(profiler.stdout.readline().rstrip())["message"] == "attached"
 
         # Run the code:
+        assert self.shell is not None
         self.shell.run_cell(cell)
 
         # Tell the subprocess it can exit:
@@ -73,4 +74,4 @@ class ProfilaMagics(Magics):
 
         elapsed = time() - start
         text = f"**Elapsed:** {elapsed:.3f} seconds\n\n" + render_text(final_stats)
-        display(Markdown(text))
+        display(Markdown(text))  # type: ignore[no-untyped-call]
