@@ -85,7 +85,7 @@ def attach_automated_command(args: Namespace) -> None:
     """
     Run the ``attach_automated`` command.
 
-    The other side of this logic is in the ``_python.py`` module.
+    The other side of this logic is in the ``_ipython.py`` module.
     """
 
     async def stop_on_stdin_close(process: Process) -> None:
