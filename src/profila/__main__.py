@@ -10,7 +10,7 @@ import json
 from shutil import which
 import sys
 
-from ._gdb import run_subprocess, read_samples, attach_subprocess
+from ._gdb import run_subprocess, read_samples, attach_subprocess, exit_subprocess
 from ._stats import Stats
 from ._render import render_text
 
@@ -91,8 +91,7 @@ def attach_automated_command(args: Namespace) -> None:
     async def stop_on_stdin_close(process: Process) -> None:
         loop = asyncio.get_event_loop()
         await loop.run_in_executor(None, sys.stdin.read)
-        assert process.stdin is not None
-        process.stdin.write(b"-gdb-exit\n")
+        await exit_subprocess(process)
 
     async def main() -> Stats:
         process = await attach_subprocess(args.pid)

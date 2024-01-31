@@ -86,7 +86,7 @@ async def _read_until_done(process: Process) -> dict[str, object]:
         if result["type"] == "result":
             return result
         if result["type"] == "notify" and result["message"] == "thread-group-exited":
-            process.stdin.write(b"-gdb-exit\n")
+            await exit_subprocess(process)
             raise ProcessExited()
 
 
@@ -163,3 +163,10 @@ async def attach_subprocess(pid: str) -> Process:
     await _read_until_done(process)
 
     return process
+
+
+async def exit_subprocess(process: Process) -> None:
+    """Exit GDB."""
+    assert process.stdin is not None
+    process.stdin.write(b"-gdb-exit\n")
+    await process.wait()
