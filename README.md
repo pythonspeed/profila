@@ -9,7 +9,7 @@
 
 Here's what Profila output looks like:
 
-```bash
+```
 $ python -m profila annotate -- scripts_for_tests/simple.py
 # Total samples: 328 (54.9% non-Numba samples, 1.8% bad samples)
 
@@ -24,10 +24,14 @@ Lines 10 to 15:
   4.3% |         result[i] -= 1
 ```
 
+To learn more [read this introductory article with a more detailed example and explanations](https://pythonspeed.com/articles/numba-profiling/).
 
 ## Installation
 
-Currently tested on Linux only; macOS support may be added in the future.
+Currently Profila works on Linux only.
+
+* On macOS you can use Docker, Podman, or a Linux VM.
+* On Windows you can use Docker, Podman, or probably WSL2.
 
 You'll need `gdb` installed.
 On Ubuntu or Debian you can do:
@@ -102,23 +106,8 @@ This might change runtime characteristics slightly, because it increases the mem
 Instruction-level parallelism, branch mispredictions, SIMD, and the CPU memory caches all have a significant impact on runtime performance, but they don't show up in profiling.
 [I'm writing a book about this if you want to learn more](https://pythonspeed.com/products/lowlevelcode/).
 
-## Development
+## Changelog
 
-To contribute to this library, first checkout the code. Then create a new virtual environment:
+### v0.1.0
 
-```bash
-cd profila
-python -m venv venv
-source venv/bin/activate
-```
-
-Now install the dependencies and test dependencies:
-
-```bash
-pip install -e '.[test]'
-```
-
-To run the tests:
-```bash
-pytest
-```
+Initial release.
