@@ -141,6 +141,13 @@ Instruction-level parallelism, branch mispredictions, SIMD, and the CPU memory c
 
 ## Changelog
 
+### v0.2.1
+
+Bug fixes:
+
+* Run Python using `sys.executable`, so it works in more environments.
+  Thanks to Jeremiah England for the bug report.
+
 ### v0.2.0
 
 Added support for Jupyter profiling.
