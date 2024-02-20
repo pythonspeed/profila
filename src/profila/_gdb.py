@@ -127,7 +127,7 @@ async def run_subprocess(
 
     process.stdin.write(b"-gdb-set mi-async\n")
     await _read_until_done(process)
-    process.stdin.write(b"-file-exec-file python\n")
+    process.stdin.write(f"-file-exec-file {quote(sys.executable)}\n".encode("utf-8"))
     await _read_until_done(process)
     process.stdin.write(
         b"-exec-arguments "
