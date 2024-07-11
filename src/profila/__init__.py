@@ -18,16 +18,19 @@ def load_ipython_extension(ipython: object) -> None:
             "Please load this extension _before_ importing numba."
         )
 
-    if sys.platform != "linux":
+    if not which("gdb") and not which("lldb-mi"):
         raise UsageError(
-            "Currently only Linux is supported; you can try running in "
-            "Docker/Podman/WSL2."
-        )
+            """\
+Both gdb and lldb-mi not found, please make sure one of the other is installed.
 
-    if not which("gdb"):
-        raise UsageError(
-            "gdb not found, please make sure it is installed."
-            " For example, 'apt install gdb' on Ubuntu."
+On Ubuntu: apt install gdb
+
+On macOS:
+1. brew install llvm cmake
+2. export LLVM_DIR=export LLVM_DIR=/opt/homebrew/Cellar/llvm/*/lib/cmake
+3. Checkout code at https://github.com/lldb-tools/lldb-mi
+4. cd lldb-mi; cmake .; cmake --build .; cp src/llvm-mi /opt/homebrew/bin/
+"""
         )
 
     os.environ["NUMBA_DEBUGINFO"] = "1"
