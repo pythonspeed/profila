@@ -15,6 +15,7 @@ from collections.abc import AsyncIterable
 from dataclasses import dataclass
 import os
 from shlex import quote
+from shutil import which
 from time import time
 from typing import Optional, cast
 import sys
@@ -29,8 +30,10 @@ class Frame:
 
 
 async def _read(process: Process) -> Optional[dict[str, object]]:
+    # print("READING")
     assert process.stdout is not None
     data_bytes = await process.stdout.readline()
+    # print("READ", data_bytes)
     if process.returncode is not None:
         raise ProcessExited()
     data = data_bytes.decode("utf-8").rstrip()
@@ -45,7 +48,7 @@ async def _sample(process: Process) -> AsyncIterable[Optional[list[Frame]]]:
     assert process.stdin is not None
     while True:
         start = time()
-        process.stdin.write(b"-exec-interrupt\n")
+        process.stdin.write(b"-exec-interrupt --all\n")
         await _read_until_done(process)
 
         process.stdin.write(b"-stack-list-frames --no-frame-filters 0 10\n")
@@ -104,6 +107,18 @@ async def read_samples(process: Process) -> AsyncIterable[Optional[list[Frame]]]
         return
 
 
+def _get_process_args() -> list[str]:
+    """
+    Return command-line arguments to run the debugger.
+    """
+    if which("gdb"):
+        return ["gdb", "--interpreter=mi3"]
+    elif which("lldb-mi"):
+        return ["lldb-mi"]
+    else:
+        raise RuntimeError("Found neither gdb nor lldb-mi")
+
+
 async def run_subprocess(
     python_cli_args: list[str],
 ) -> Process:
@@ -117,8 +132,7 @@ async def run_subprocess(
     env["PYTHONUNBUFFERED"] = "1"
 
     process = await asyncio.create_subprocess_exec(
-        "gdb",
-        "--interpreter=mi3",
+        *_get_process_args(),
         stdout=asyncio.subprocess.PIPE,
         stdin=asyncio.subprocess.PIPE,
         env=env,
@@ -127,7 +141,9 @@ async def run_subprocess(
 
     process.stdin.write(b"-gdb-set mi-async\n")
     await _read_until_done(process)
-    process.stdin.write(f"-file-exec-file {quote(sys.executable)}\n".encode("utf-8"))
+    process.stdin.write(
+        f"-file-exec-and-symbols {quote(sys.executable)}\n".encode("utf-8")
+    )
     await _read_until_done(process)
     process.stdin.write(
         b"-exec-arguments "
@@ -148,8 +164,7 @@ async def attach_subprocess(pid: str) -> Process:
     Attach to an existing Python subprocess.
     """
     process = await asyncio.create_subprocess_exec(
-        "gdb",
-        "--interpreter=mi3",
+        *_get_process_args(),
         stdout=asyncio.subprocess.PIPE,
         stdin=asyncio.subprocess.PIPE,
     )
