@@ -66,7 +66,7 @@ async def _sample(process: Process) -> AsyncIterable[Optional[list[Frame]]]:
         process.stdin.write(b"-exec-continue\n")
         await _read_until_done(process)
         elapsed = time() - start
-        await asyncio.sleep(max(0.010 - elapsed, 0))
+        await asyncio.sleep(0.01)
         # print(time() - start)
 
 

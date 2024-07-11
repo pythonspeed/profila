@@ -19,6 +19,8 @@ def render_text(stats: FinalStats) -> str:
         + f"{stats.percent_bad_samples}% bad samples)\n"
     )
 
+    # TODO warning if fewer than 100? samples
+
     for filename, line_percents in stats.numba_samples.items():
         min_line = min(line_percents)
         max_line = max(line_percents)
