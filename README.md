@@ -87,6 +87,7 @@ for i in range(100):
 ```
 
 ### Command-line profiling
+
 If you usually run your script like this:
 
 ```bash
@@ -97,6 +98,18 @@ Instead run it like this:
 
 ```bash
 $ python -m profila annotate -- yourscript.py --arg1=200
+```
+
+If you usually run your script like this, with `-m`:
+
+```bash
+$ python -m yourpackage --arg1=200
+```
+
+Instead run it like this:
+
+```bash
+$ python -m profila annotate -- -m yourpackage --arg1=200
 ```
 
 **Sampling is done every 10 milliseconds, so you need to make sure your Numba code runs for a sufficiently long time.**
@@ -140,6 +153,12 @@ Instruction-level parallelism, branch mispredictions, SIMD, and the CPU memory c
 [I'm writing a book about this if you want to learn more](https://pythonspeed.com/products/lowlevelcode/).
 
 ## Changelog
+
+### v0.2.2
+
+Bug fixes:
+
+* Fixed occasional error `TypeError: argument of type 'NoneType' is not iterable`.
 
 ### v0.2.1
 
