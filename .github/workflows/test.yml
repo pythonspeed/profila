@@ -26,6 +26,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get install -y gdb
+        gdb --version
         pip install '.[test]'
     - name: Run tests
       run: |
