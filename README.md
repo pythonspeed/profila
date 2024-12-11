@@ -1,5 +1,7 @@
 # Profila: a profiler for Numba
 
+# WARNING: Currently not work with newer versions of GDB, see #12
+
 **This profiler is sponsored by my book on [writing fast low-level code in Python](https://pythonspeed.com/products/lowlevelcode/), which uses Numba for most of its examples.**
 
 Here's what Profila output looks like:
