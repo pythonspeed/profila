@@ -160,9 +160,9 @@ def setup_command(args: Namespace) -> None:
 
     if not args.yes:
         print(
-            "In order for Profila to work, it needs to download gdb, "
+            "In order for Profila to work, it needs to download gdb v12, "
             "since newer versions have some issues with Numba. This will "
-            "not interfere with any existing gdb install, it will only be "
+            "NOT interfere or break any existing gdb install, it will only be "
             "used for Profila."
         )
         result = input("Download gdb v12? It's about 100MB to download [Y/n] ")
