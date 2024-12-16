@@ -27,7 +27,7 @@ def load_ipython_extension(ipython: object) -> None:
 
     if not os.path.exists(GDB_PATH):
         raise UsageError(
-            "gdb not found, make sure it is installed by running "
+            "Profila's custom gdb not found, make sure it is installed by running "
             "'python -m profila setup'."
         )
 
