@@ -150,7 +150,7 @@ async def attach_subprocess(pid: str) -> Process:
     Attach to an existing Python subprocess.
     """
     process = await asyncio.create_subprocess_exec(
-        "gdb",
+        GDB_PATH,
         "--interpreter=mi3",
         stdout=asyncio.subprocess.PIPE,
         stdin=asyncio.subprocess.PIPE,
