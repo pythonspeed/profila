@@ -143,6 +143,12 @@ Instruction-level parallelism, branch mispredictions, SIMD, and the CPU memory c
 
 ## Changelog
 
+### v0.3.0
+
+Bug fixes:
+
+* Work on newer versions of Linux, like Ubuntu 24.04 and RHEL 9, in the face of issues with newer gdb.
+
 ### v0.2.1
 
 Bug fixes:
