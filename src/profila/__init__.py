@@ -24,10 +24,12 @@ def load_ipython_extension(ipython: object) -> None:
             "Docker/Podman/WSL2."
         )
 
-    if not which("gdb"):
+    from ._gdb import GDB_PATH
+
+    if not os.path.exists(GDB_PATH):
         raise UsageError(
-            "gdb not found, please make sure it is installed."
-            " For example, 'apt install gdb' on Ubuntu."
+            "gdb not found, make sure it is installed by running "
+            "'python -m profila setup'."
         )
 
     os.environ["NUMBA_DEBUGINFO"] = "1"
