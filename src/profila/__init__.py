@@ -4,7 +4,6 @@ A profiler for Numba.
 
 import os
 import sys
-from shutil import which
 
 
 def load_ipython_extension(ipython: object) -> None:
