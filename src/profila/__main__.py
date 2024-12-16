@@ -7,10 +7,21 @@ import asyncio
 from asyncio.subprocess import Process
 from dataclasses import asdict
 import json
-from shutil import which
+import os
+from platform import machine
+import subprocess
 import sys
+import tarfile
+from tempfile import TemporaryFile
+from urllib.request import urlopen
 
-from ._gdb import run_subprocess, read_samples, attach_subprocess, exit_subprocess
+from ._gdb import (
+    run_subprocess,
+    read_samples,
+    attach_subprocess,
+    exit_subprocess,
+    GDB_PATH,
+)
 from ._stats import Stats
 from ._render import render_text
 
@@ -46,6 +57,20 @@ ATTACH_AUTOMATED_PARSER.add_argument(
 )
 ATTACH_AUTOMATED_PARSER.set_defaults(command="attach_automated")
 
+# Hopefully can go away someday...
+SETUP_PARSER = SUBPARSERS.add_parser(
+    "setup",
+    help="Download some files profila needs to run.",
+    formatter_class=RawDescriptionHelpFormatter,
+)
+SETUP_PARSER.set_defaults(command="setup")
+SETUP_PARSER.add_argument(
+    "--yes",
+    default=False,
+    action="store_true",
+    help="Download dependencies automatically, without asking permission.",
+)
+
 
 async def get_stats(process: Process) -> Stats:
     stats = Stats()
@@ -66,10 +91,10 @@ def annotate_command(args: Namespace) -> None:
     if args.rest and args.rest[0] == "--":
         del args.rest[0]
 
-    if not which("gdb"):
+    if not os.path.exists(GDB_PATH):
         raise SystemExit(
-            "gdb not found, make sure it is installed, e.g. "
-            "run 'apt install gdb' on Ubuntu."
+            "gdb not found, make sure it is installed by running "
+            "'python -m profila setup'."
         )
 
     async def main() -> Stats:
@@ -112,12 +137,80 @@ def attach_automated_command(args: Namespace) -> None:
     sys.stdout.flush()
 
 
+STORAGE_PATH = os.path.expanduser("~/.profila-gdb/")
+MICROMAMBA_PATH = os.path.join(STORAGE_PATH, "bin/micromamba")
+
+
+def setup_command(args: Namespace) -> None:
+    """
+    Run the ``setup`` command.
+
+    Download micromamba, then use micromamba to install gdb v12, that is known
+    to work with Numba.
+
+    See https://github.com/numba/numba/issues/9817
+    """
+    if os.path.exists(GDB_PATH):
+        print(
+            "Profila's gdb is already downloaded, exiting. "
+            "If you think the download is corrupted, delete ~/.profila-gdb "
+            "and try again."
+        )
+        return
+
+    if not args.yes:
+        print(
+            "In order for Profila to work, it needs to download gdb, "
+            "since newer versions have some issues with Numba. This will "
+            "not interfere with any existing gdb install, it will only be "
+            "used for Profila."
+        )
+        result = input("Download gdb v12? It's about 100MB to download [Y/n] ")
+        if result.lower().strip() not in ("y", ""):
+            print("OK, not downloading.")
+            return
+
+    architecture = machine()
+    if architecture == "x86_64":
+        microconda_url = "https://micro.mamba.pm/api/micromamba/linux-64/latest"
+    elif architecture == "arm64":
+        microconda_url = "https://micro.mamba.pm/api/micromamba/linux-aarch64/latest"
+    else:
+        raise SystemExit("Unsupported CPU architecture")
+
+    if not os.path.exists(MICROMAMBA_PATH):
+        with TemporaryFile("rb+") as f:
+            f.write(urlopen(microconda_url).read())
+            f.seek(0, 0)
+            os.makedirs(STORAGE_PATH)
+            tarfile.open(fileobj=f).extract("bin/micromamba", STORAGE_PATH)
+    os.chmod(MICROMAMBA_PATH, 0o775)
+    env = os.environ.copy()
+    env["MAMBA_ROOT_PREFIX"] = STORAGE_PATH
+    subprocess.check_call(
+        [
+            MICROMAMBA_PATH,
+            "install",
+            "-y",
+            "-q",
+            "-c",
+            "conda-forge",
+            "gdb=12",
+            "python=3.10",
+        ],
+        env=env,
+    )
+    print("Profila is now ready to run.")
+
+
 def main() -> None:
     args = PARSER.parse_args()
     if args.command == "annotate":
         annotate_command(args)
     elif args.command == "attach_automated":
         attach_automated_command(args)
+    elif args.command == "setup":
+        setup_command(args)
     else:
         raise NotImplementedError()
 
