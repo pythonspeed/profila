@@ -1,13 +1,23 @@
 import asyncio
-from subprocess import Popen, PIPE, check_output
 import os
+from subprocess import Popen, PIPE, check_output, check_call
+import sys
+from typing import Any
+
+import pytest
 
 from profila._stats import FinalStats
 from profila._gdb import run_subprocess
 from profila.__main__ import get_stats
 
 
-def test_stdout_and_stderr_passthrough() -> None:
+@pytest.fixture(scope="session")
+def profila_setup() -> None:
+    """Setup profila."""
+    check_call([sys.executable, "-m", "profila", "setup", "--yes"])
+
+
+def test_stdout_and_stderr_passthrough(profila_setup: Any) -> None:
     """
     stdout and stderr are passed from the subprocess.
     """
@@ -30,7 +40,7 @@ def test_stdout_and_stderr_passthrough() -> None:
     assert b"out2@@\nYY" in p.stdout.read()
 
 
-def test_profiling() -> None:
+def test_profiling(profila_setup: Any) -> None:
     """
     Plausible costs are assigned to relevant lines of code.
     """
@@ -55,7 +65,7 @@ def test_profiling() -> None:
     assert cheap > 0
 
 
-def test_jupyter() -> None:
+def test_jupyter(profila_setup: Any) -> None:
     """
     Test rendering a Jupyter notebook that profiles with profila.
     """
