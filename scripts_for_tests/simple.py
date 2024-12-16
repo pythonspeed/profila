@@ -1,10 +1,10 @@
 import numpy as np
-from numba import njit
+from numba import jit
 
 DATA = np.random.random((1_000_000,))
 
 
-@njit
+@jit
 def simple(timeseries):
     result = np.empty_like(timeseries)
     for i in range(len(timeseries)):
