@@ -21,6 +21,8 @@ import sys
 
 from pygdbmi.gdbmiparser import parse_response
 
+GDB_PATH = os.path.expanduser("~/.profila-gdb/bin/gdb")
+
 
 @dataclass
 class Frame:
@@ -117,7 +119,7 @@ async def run_subprocess(
     env["PYTHONUNBUFFERED"] = "1"
 
     process = await asyncio.create_subprocess_exec(
-        "gdb",
+        GDB_PATH,
         "--interpreter=mi3",
         stdout=asyncio.subprocess.PIPE,
         stdin=asyncio.subprocess.PIPE,
@@ -148,7 +150,7 @@ async def attach_subprocess(pid: str) -> Process:
     Attach to an existing Python subprocess.
     """
     process = await asyncio.create_subprocess_exec(
-        "gdb",
+        GDB_PATH,
         "--interpreter=mi3",
         stdout=asyncio.subprocess.PIPE,
         stdin=asyncio.subprocess.PIPE,

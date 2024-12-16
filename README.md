@@ -1,5 +1,7 @@
 # Profila: a profiler for Numba
 
+# WARNING: Currently not working with newer versions of GDB, see [issue #12](https://github.com/pythonspeed/profila/issues/12)
+
 **This profiler is sponsored by my book on [writing fast low-level code in Python](https://pythonspeed.com/products/lowlevelcode/), which uses Numba for most of its examples.**
 
 Here's what Profila output looks like:
@@ -154,10 +156,11 @@ Instruction-level parallelism, branch mispredictions, SIMD, and the CPU memory c
 
 ## Changelog
 
-### v0.2.2
+### v0.3.0
 
 Bug fixes:
 
+* Work on newer versions of Linux, like Ubuntu 24.04 and RHEL 9, in the face of issues with newer gdb.
 * Fixed occasional error `TypeError: argument of type 'NoneType' is not iterable`.
 
 ### v0.2.1
