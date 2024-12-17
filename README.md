@@ -1,7 +1,5 @@
 # Profila: a profiler for Numba
 
-# WARNING: Currently not working with newer versions of GDB, see [issue #12](https://github.com/pythonspeed/profila/issues/12)
-
 **This profiler is sponsored by my book on [writing fast low-level code in Python](https://pythonspeed.com/products/lowlevelcode/), which uses Numba for most of its examples.**
 
 Here's what Profila output looks like:
@@ -34,23 +32,17 @@ Currently Profila works on Linux only.
 * On macOS you can use Docker, Podman, or a Linux VM.
 * On Windows you can use Docker, Podman, or probably WSL2.
 
-You'll need `gdb` installed.
-On Ubuntu or Debian you can do:
-
-```bash
-apt-get install gdb
-```
-
-On RedHat-based systems:
-
-```bash
-dnf install gdb
-```
-
 Install this library using `pip`:
 
 ```bash
 pip install profila
+```
+
+Then, have Profila install some dependencies it needs, specifically an older version of gdb; this will not interfere with your system gdb.
+(This is necessary due to some bad interactions with newer gdb and Numba that will hopefully go away someday.)
+
+```bash
+python -m profila setup
 ```
 
 ## Usage
@@ -155,6 +147,10 @@ Instruction-level parallelism, branch mispredictions, SIMD, and the CPU memory c
 [I'm writing a book about this if you want to learn more](https://pythonspeed.com/products/lowlevelcode/).
 
 ## Changelog
+
+### v0.3.1
+
+Documentation improvements.
 
 ### v0.3.0
 
