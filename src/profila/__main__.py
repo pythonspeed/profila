@@ -186,6 +186,10 @@ def setup_command(args: Namespace) -> None:
             tarfile.open(fileobj=f).extract("bin/micromamba", STORAGE_PATH)
     os.chmod(MICROMAMBA_PATH, 0o775)
     env = os.environ.copy()
+    # Ensure existing Conda environment doesn't break things:
+    for key in list(env.keys()):
+        if key.startswith("CONDA_") or key.startswith("MAMBA_"):
+            env.pop(key)
     env["MAMBA_ROOT_PREFIX"] = STORAGE_PATH
     subprocess.check_call(
         [

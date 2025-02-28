@@ -1,6 +1,7 @@
 """
 IPython/Jupyter magics.
 """
+
 import ctypes
 import json
 import sys
@@ -12,7 +13,7 @@ from ._stats import FinalStats
 from ._render import render_text
 
 from IPython.core.magic import Magics, magics_class, cell_magic
-from IPython.core.display import display, Markdown
+from IPython.display import display, Markdown
 
 libc = ctypes.CDLL("libc.so.6")
 prctl = libc.prctl
