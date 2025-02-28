@@ -150,7 +150,9 @@ Instruction-level parallelism, branch mispredictions, SIMD, and the CPU memory c
 
 ### v0.3.2
 
-`python -m profila setup` should now work correctly in Conda environments.
+* `python -m profila setup` should now work correctly in Conda environments.
+* Support for latest IPython.
+* Support for Python 3.13.
 
 ### v0.3.1
 
