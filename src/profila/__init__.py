@@ -9,7 +9,7 @@ import sys
 def load_ipython_extension(ipython: object) -> None:
     """Load our IPython magic"""
     from IPython.core.error import UsageError
-    from IPython.core.display import display, Markdown
+    from IPython.display import display, Markdown
 
     if "numba" in sys.modules:
         raise UsageError(
